@@ -4,10 +4,17 @@ require 'sinatra'
 require 'sinatra/reloader'
 
 $guesses = 5
+$cheat_mode = false
 
 set :secret_number, rand(101)
 
 get '/' do
+  if params[:cheat] == 'true'
+    $cheat_mode = true
+  elsif params[:cheat] == 'false'
+    $cheat_mode = false
+  end
+
   guess = params[:guess].to_i
   $guesses -= 1 if params[:guess]
   evaluation = check_guess(guess, settings.secret_number)
@@ -20,14 +27,16 @@ get '/' do
     reset_game
   end
 
-  erb :index, locals: { number: settings.secret_number,
+  erb :index, locals: { secret_number: settings.secret_number,
                         message: message,
-                        bg_color: bg_color }
+                        bg_color: bg_color,
+                        cheat_mode: $cheat_mode }
 end
 
 def reset_game
   $guesses = 5
   settings.secret_number = rand(101)
+  $cheat_mode = false
 end
 
 def check_guess(guess, secret_number)
